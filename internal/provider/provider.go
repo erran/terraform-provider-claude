@@ -254,6 +254,7 @@ func (p *ClaudeProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewFederationIssuerResource,
 		NewFederationRuleResource,
 		NewWorkspaceResource,
+		NewWorkspaceMemberResource,
 	}
 }
 
