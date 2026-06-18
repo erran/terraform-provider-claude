@@ -59,6 +59,29 @@ terraform {
 provider "claude" {}
 ```
 
+## Resources
+
+### `claude_service_account`
+
+Manages a Workload Identity Federation
+[service account](https://platform.claude.com/docs/en/manage-claude/wif-admin-api#service-accounts)
+— the non-human identity (`svac_...`) that a federated token acts as.
+
+```hcl
+resource "claude_service_account" "inference_worker" {
+  name              = "inference-worker"
+  organization_role = "developer"
+}
+```
+
+Deleting the resource archives the service account (a soft delete). Archiving
+fails while a live federation rule still references the account, so archive the
+rule first. Existing service accounts can be imported by id:
+
+```shell
+terraform import claude_service_account.inference_worker svac_0123456789abcdef
+```
+
 ## License
 
 Released under the [MIT License](./LICENSE). Copyright (c) 2026 Erran Carey

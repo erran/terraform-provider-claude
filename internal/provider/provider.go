@@ -119,7 +119,9 @@ func (p *ClaudeProvider) userAgent() string {
 }
 
 func (p *ClaudeProvider) Resources(ctx context.Context) []func() resource.Resource {
-	return []func() resource.Resource{}
+	return []func() resource.Resource{
+		NewServiceAccountResource,
+	}
 }
 
 func (p *ClaudeProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
