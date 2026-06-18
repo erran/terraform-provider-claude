@@ -44,6 +44,44 @@ The token may also be passed explicitly via the provider's `oauth_token`
 attribute, but the environment variable is recommended so secrets stay out of
 configuration and state.
 
+### Workload Identity Federation (CI and automation)
+
+For CI and automation, the provider can authenticate without any static secret
+by exchanging an OIDC identity token for a short-lived `org:admin` bearer token
+(see
+[Bootstrap a workload to manage WIF](https://platform.claude.com/docs/en/manage-claude/wif-admin-api#bootstrap-a-workload-to-manage-wif)).
+The `org:admin` scope is granted by a federation rule, which must be created
+once in the Claude Console with `oauth_scope: org:admin` targeting an admin
+service account — granting a workload organization-admin access is a deliberate
+human action that automation cannot bootstrap for itself.
+
+The provider posts the identity token to `POST /v1/oauth/token` (the
+[RFC 7523](https://www.rfc-editor.org/rfc/rfc7523) `jwt-bearer` grant) along
+with the federation rule, organization, and service account IDs, then uses the
+minted token for all Admin API calls.
+
+In GitLab CI, mint the identity token with an `id_tokens` block and supply the
+federation IDs as CI/CD variables:
+
+```yaml
+manage-wif:
+  id_tokens:
+    ANTHROPIC_IDENTITY_TOKEN:
+      aud: https://api.anthropic.com # must match the federation rule's audience
+  variables:
+    ANTHROPIC_FEDERATION_RULE_ID: $ANTHROPIC_FEDERATION_RULE_ID
+    ANTHROPIC_ORGANIZATION_ID: $ANTHROPIC_ORGANIZATION_ID
+    ANTHROPIC_SERVICE_ACCOUNT_ID: $ANTHROPIC_SERVICE_ACCOUNT_ID
+  script:
+    - terraform apply -auto-approve
+```
+
+The provider reads `ANTHROPIC_IDENTITY_TOKEN` (or `ANTHROPIC_IDENTITY_TOKEN_FILE`),
+`ANTHROPIC_FEDERATION_RULE_ID`, `ANTHROPIC_ORGANIZATION_ID`,
+`ANTHROPIC_SERVICE_ACCOUNT_ID`, and the optional `ANTHROPIC_WORKSPACE_ID` from
+the environment, or the equivalent provider attributes. A static `oauth_token`
+takes precedence over federation when both are present.
+
 ## Usage
 
 ```hcl

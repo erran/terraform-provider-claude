@@ -40,7 +40,7 @@ func TestAccServiceAccountResource(t *testing.T) {
 			// Update the name in place.
 			{
 				Config: testAccServiceAccountConfig(renamed),
-				Check: resource.TestCheckResourceAttr("claude_service_account.test", "name", renamed),
+				Check:  resource.TestCheckResourceAttr("claude_service_account.test", "name", renamed),
 			},
 		},
 	})
