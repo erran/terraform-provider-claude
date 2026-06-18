@@ -22,3 +22,12 @@ func int64PointerFromPlan(v types.Int64) *int64 {
 	}
 	return v.ValueInt64Pointer()
 }
+
+// boolPointerFromPlan returns a pointer to the value, or nil when the planned
+// value is null or unknown, so it is omitted from the request body.
+func boolPointerFromPlan(v types.Bool) *bool {
+	if v.IsNull() || v.IsUnknown() {
+		return nil
+	}
+	return v.ValueBoolPointer()
+}

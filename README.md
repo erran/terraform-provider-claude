@@ -139,6 +139,36 @@ resource "claude_federation_issuer" "github_actions" {
 Deleting the resource archives the issuer; archiving fails while a live
 federation rule still references it.
 
+### `claude_federation_rule`
+
+Manages a
+[federation rule](https://platform.claude.com/docs/en/manage-claude/wif-admin-api#federation-rules)
+(`fdrl_...`) binding an issuer to a service account. OAuth-authenticated callers
+may only manage rules whose `oauth_scope` is `workspace:developer` or
+`workspace:inference`; other scopes (such as `org:admin`) must be managed in the
+Console.
+
+```hcl
+resource "claude_federation_rule" "gha_deploy" {
+  name        = "gha-deploy"
+  issuer_id   = claude_federation_issuer.github_actions.id
+  oauth_scope = "workspace:developer"
+
+  match = {
+    subject_prefix = "repo:my-org/my-repo:ref:refs/heads/main"
+  }
+
+  target = {
+    service_account_id = claude_service_account.inference_worker.id
+  }
+
+  workspace_id = "wrkspc_..."
+}
+```
+
+Changing `issuer_id` or `workspace_id` forces replacement. Deleting the
+resource archives the rule.
+
 ## Development
 
 ```shell

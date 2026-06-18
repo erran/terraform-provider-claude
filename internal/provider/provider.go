@@ -252,6 +252,7 @@ func (p *ClaudeProvider) Resources(ctx context.Context) []func() resource.Resour
 	return []func() resource.Resource{
 		NewServiceAccountResource,
 		NewFederationIssuerResource,
+		NewFederationRuleResource,
 	}
 }
 
