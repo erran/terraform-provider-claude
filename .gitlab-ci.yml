@@ -1,0 +1,69 @@
+# GitLab CI pipeline for the Claude Terraform provider.
+#
+# - build:   compile the provider binary and packages.
+# - test:    run unit tests (no API credentials required).
+# - testacc: run acceptance tests, which create real resources against the
+#            Claude Admin API. This job authenticates with Workload Identity
+#            Federation: GitLab mints an OIDC ID token, the provider exchanges
+#            it for a short-lived org:admin bearer token. It runs only when the
+#            federation variables are configured (see README "Continuous
+#            integration").
+
+default:
+  image: golang:1.25
+
+variables:
+  # The repo pins go 1.25 in go.mod; use the toolchain in the image rather than
+  # downloading another one.
+  GOTOOLCHAIN: local
+  GOPATH: $CI_PROJECT_DIR/.go
+
+cache:
+  key:
+    files:
+      - go.sum
+  paths:
+    - .go/pkg/mod/
+
+stages:
+  - build
+  - test
+  - acceptance
+
+build:
+  stage: build
+  script:
+    - go build ./...
+    - go vet ./...
+
+test:
+  stage: test
+  script:
+    - go test ./... -timeout=120s
+
+# Acceptance tests exercise the provider end to end against the live Admin API.
+# They require an org:admin credential, obtained here via Workload Identity
+# Federation rather than a static token:
+#
+#   1. GitLab issues an OIDC JWT into $ANTHROPIC_IDENTITY_TOKEN (id_tokens).
+#   2. The provider exchanges it at POST /v1/oauth/token for a short-lived
+#      bearer token bound to the federation rule's service account.
+#
+# Configure the federation rule (with oauth_scope: org:admin) in the Claude
+# Console, then set ANTHROPIC_FEDERATION_RULE_ID, ANTHROPIC_ORGANIZATION_ID,
+# ANTHROPIC_SERVICE_ACCOUNT_ID, and optionally ANTHROPIC_WORKSPACE_ID as CI/CD
+# variables. The provider reads all of these from the environment.
+testacc:
+  stage: acceptance
+  id_tokens:
+    ANTHROPIC_IDENTITY_TOKEN:
+      # Must match the audience the federation rule expects for this issuer.
+      aud: https://api.anthropic.com
+  variables:
+    TF_ACC: "1"
+  script:
+    - go test ./... -v -timeout=120m
+  rules:
+    # Only run when the federation rule is configured, to avoid failing
+    # pipelines that have no credentials (for example on forks).
+    - if: $ANTHROPIC_FEDERATION_RULE_ID

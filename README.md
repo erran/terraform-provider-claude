@@ -82,6 +82,23 @@ rule first. Existing service accounts can be imported by id:
 terraform import claude_service_account.inference_worker svac_0123456789abcdef
 ```
 
+## Development
+
+```shell
+make build    # compile
+make test     # unit tests
+make testacc  # acceptance tests (creates real resources; needs org:admin creds)
+```
+
+## Continuous integration
+
+`.gitlab-ci.yml` defines three stages: `build`, `test`, and `acceptance`. The
+acceptance job authenticates with Workload Identity Federation instead of a
+static token, so no long-lived secret lives in CI. See
+[Authentication](#authentication) and the WIF section below. It runs only when
+`ANTHROPIC_FEDERATION_RULE_ID` is set, so unconfigured pipelines (e.g. forks)
+are not failed.
+
 ## License
 
 Released under the [MIT License](./LICENSE). Copyright (c) 2026 Erran Carey
