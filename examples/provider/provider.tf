@@ -1,7 +1,7 @@
 terraform {
   required_providers {
     claude = {
-      source = "erran/claude"
+      source = "registry.terraform.io/erran/claude"
     }
   }
 }
