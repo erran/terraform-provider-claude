@@ -16,6 +16,10 @@ permissions:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
+    # The GPG signing secrets live in the "Production" environment, so the job
+    # must opt in to it to read them. The environment's deployment policy must
+    # also allow the release tag (add a "v*" tag rule alongside the main branch).
+    environment: Production
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-go@d35c59abb061a4a6fb18e82ac0862c26744d6ab5 # v5.5.0
