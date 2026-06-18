@@ -23,3 +23,8 @@ fmt:
 .PHONY: vet
 vet:
 	go vet ./...
+
+# Regenerate the docs/ directory from the schema and examples/ using tfplugindocs.
+.PHONY: generate
+generate:
+	go generate ./...

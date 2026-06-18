@@ -12,6 +12,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 )
 
+// Format example terraform files so the generated docs are tidy.
+//go:generate terraform fmt -recursive ./examples/
+
+// Generate the docs/ directory consumed by the Terraform Registry from the
+// provider schema and the examples/ directory.
+//go:generate go run github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs generate --provider-name claude
+
 // these will be set by the goreleaser configuration
 // to appropriate values for the compiled binary.
 var version string = "dev"

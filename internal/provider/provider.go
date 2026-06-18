@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/erran/terraform-provider-claude/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -16,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"gitlab.com/gitlab-org/ai/terraform-provider-claude/internal/client"
 )
 
 // Environment variables the provider reads, mirroring the names the Anthropic

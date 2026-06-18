@@ -8,11 +8,11 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/erran/terraform-provider-claude/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"gitlab.com/gitlab-org/ai/terraform-provider-claude/internal/client"
 )
 
 var (

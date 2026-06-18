@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/erran/terraform-provider-claude/internal/client"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -16,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"gitlab.com/gitlab-org/ai/terraform-provider-claude/internal/client"
 )
 
 // Ensure the resource satisfies the expected interfaces.
