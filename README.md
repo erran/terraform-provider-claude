@@ -22,6 +22,28 @@ template.
 go build ./...
 ```
 
+## Authentication
+
+The provider authenticates against the Claude Admin API with an OAuth bearer
+token carrying the `org:admin` scope. The scope is granted only to organization
+members with the admin, owner, or primary owner role. Admin API keys
+(`x-api-key`) are **not** accepted on these endpoints.
+
+Obtain an interactive token with the [`ant` CLI](https://platform.claude.com/docs/en/cli-sdks-libraries/cli/quickstart)
+and export it as `ANTHROPIC_OAUTH_TOKEN`:
+
+```shell
+ant auth login --profile admin --scope "org:admin"
+export ANTHROPIC_OAUTH_TOKEN=$(ant auth print-credentials --profile admin --access-token)
+```
+
+Interactive tokens are short-lived; if requests start returning `401`, re-run
+the export command (it refreshes the token automatically).
+
+The token may also be passed explicitly via the provider's `oauth_token`
+attribute, but the environment variable is recommended so secrets stay out of
+configuration and state.
+
 ## Usage
 
 ```hcl
@@ -33,6 +55,7 @@ terraform {
   }
 }
 
+# Reads ANTHROPIC_OAUTH_TOKEN from the environment.
 provider "claude" {}
 ```
 
