@@ -88,7 +88,7 @@ takes precedence over federation when both are present.
 terraform {
   required_providers {
     claude = {
-      source = "gitlab-org/claude"
+      source = "erran/claude"
     }
   }
 }

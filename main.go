@@ -8,8 +8,8 @@ import (
 	"flag"
 	"log"
 
+	"github.com/erran/terraform-provider-claude/internal/provider"
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-	"gitlab.com/gitlab-org/ai/terraform-provider-claude/internal/provider"
 )
 
 // these will be set by the goreleaser configuration
@@ -23,7 +23,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/gitlab-org/claude",
+		Address: "registry.terraform.io/erran/claude",
 		Debug:   debug,
 	}
 
