@@ -256,6 +256,7 @@ func (p *ClaudeProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewWorkspaceResource,
 		NewWorkspaceMemberResource,
 		NewOrganizationInviteResource,
+		NewOrganizationMemberResource,
 	}
 }
 
