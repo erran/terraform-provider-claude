@@ -169,6 +169,16 @@ resource "claude_federation_rule" "gha_deploy" {
 Changing `issuer_id` or `workspace_id` forces replacement. Deleting the
 resource archives the rule.
 
+### Other Admin API resources
+
+| Resource | Manages | Notes |
+| --- | --- | --- |
+| `claude_workspace` | Organization workspaces (`wrkspc_...`) | Delete archives the workspace. |
+| `claude_workspace_member` | A user's membership/role in a workspace | Composite id `<workspace_id>/<user_id>`. |
+| `claude_organization_invite` | Pending organization invites | No update endpoint; `email`/`role` force replacement. |
+| `claude_organization_member` | The role of an existing org member | Members are created via invites, not the API; the resource adopts an existing user. |
+| `claude_api_key` | Name and status of an existing API key | Keys can't be created or deleted via the API; `create` adopts an existing key and `delete` is a no-op. |
+
 ## Development
 
 ```shell
