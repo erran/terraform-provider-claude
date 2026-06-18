@@ -265,6 +265,7 @@ func (p *ClaudeProvider) DataSources(ctx context.Context) []func() datasource.Da
 	return []func() datasource.DataSource{
 		NewOrganizationDataSource,
 		NewWorkspaceDataSource,
+		NewWorkspacesDataSource,
 	}
 }
 
