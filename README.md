@@ -179,6 +179,29 @@ resource archives the rule.
 | `claude_organization_member` | The role of an existing org member | Members are created via invites, not the API; the resource adopts an existing user. |
 | `claude_api_key` | Name and status of an existing API key | Keys can't be created or deleted via the API; `create` adopts an existing key and `delete` is a no-op. |
 
+## Data sources
+
+Read-only lookups of existing resources:
+
+| Data source | Returns |
+| --- | --- |
+| `claude_organization` | The current organization (`/v1/organizations/me`). |
+| `claude_workspace` | A single workspace by `id`. |
+| `claude_workspaces` | All workspaces, with an optional `include_archived` filter. |
+| `claude_service_account` | A single service account by `id`. |
+| `claude_federation_issuer` | A single federation issuer by `id`. |
+| `claude_federation_rule` | A single federation rule by `id`. |
+
+```hcl
+data "claude_organization" "current" {}
+
+data "claude_workspaces" "all" {}
+
+output "org_name" {
+  value = data.claude_organization.current.name
+}
+```
+
 ## Development
 
 ```shell
