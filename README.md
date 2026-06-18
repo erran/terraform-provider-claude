@@ -120,6 +120,25 @@ rule first. Existing service accounts can be imported by id:
 terraform import claude_service_account.inference_worker svac_0123456789abcdef
 ```
 
+### `claude_federation_issuer`
+
+Manages a
+[federation issuer](https://platform.claude.com/docs/en/manage-claude/wif-admin-api#federation-issuers)
+(`fdis_...`) — an external OIDC provider Anthropic trusts. The JWKS source is a
+discriminated union selected by `jwks_type` (`discovery`, `explicit_url`, or
+`inline`).
+
+```hcl
+resource "claude_federation_issuer" "github_actions" {
+  name       = "github-actions"
+  issuer_url = "https://token.actions.githubusercontent.com"
+  # jwks_type defaults to "discovery"
+}
+```
+
+Deleting the resource archives the issuer; archiving fails while a live
+federation rule still references it.
+
 ## Development
 
 ```shell

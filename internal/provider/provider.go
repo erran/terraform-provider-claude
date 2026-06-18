@@ -251,6 +251,7 @@ func (p *ClaudeProvider) userAgent() string {
 func (p *ClaudeProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewServiceAccountResource,
+		NewFederationIssuerResource,
 	}
 }
 
