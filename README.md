@@ -191,6 +191,8 @@ Read-only lookups of existing resources:
 | `claude_service_account` | A single service account by `id`. |
 | `claude_federation_issuer` | A single federation issuer by `id`. |
 | `claude_federation_rule` | A single federation rule by `id`. |
+| `claude_organization_rate_limits` | Organization-level [rate limits](https://platform.claude.com/docs/en/manage-claude/rate-limits-api), with optional `model` and `group_type` filters. |
+| `claude_workspace_rate_limits` | A workspace's rate limit overrides by `workspace_id`, with an optional `group_type` filter. |
 
 ```hcl
 data "claude_organization" "current" {}

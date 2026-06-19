@@ -269,6 +269,8 @@ func (p *ClaudeProvider) DataSources(ctx context.Context) []func() datasource.Da
 		NewServiceAccountDataSource,
 		NewFederationIssuerDataSource,
 		NewFederationRuleDataSource,
+		NewOrganizationRateLimitsDataSource,
+		NewWorkspaceRateLimitsDataSource,
 	}
 }
 
