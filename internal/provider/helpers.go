@@ -14,6 +14,15 @@ func optionalString(s string) types.String {
 	return types.StringValue(s)
 }
 
+// optionalInt64 maps an API integer pointer to a Terraform value, treating a
+// nil pointer as null so unset optional fields do not show spurious diffs.
+func optionalInt64(v *int64) types.Int64 {
+	if v == nil {
+		return types.Int64Null()
+	}
+	return types.Int64Value(*v)
+}
+
 // int64PointerFromPlan returns a pointer to the value, or nil when the planned
 // value is null or unknown, so it is omitted from the request body.
 func int64PointerFromPlan(v types.Int64) *int64 {
