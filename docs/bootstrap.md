@@ -5,10 +5,6 @@ This guide explains how to authenticate the provider with
 (WIF) so that CI and automation can manage Claude Admin API resources without a
 long-lived secret.
 
-For a complete, working example, see
-[gitlab-org/ai/claude-federation](https://gitlab.com/gitlab-org/ai/claude-federation),
-which bootstraps and manages federation with this provider end to end.
-
 ## How it works
 
 Instead of a static `org:admin` OAuth token, the provider exchanges a
@@ -95,6 +91,3 @@ The `id_tokens` block exports `ANTHROPIC_IDENTITY_TOKEN` into the job
 environment, and the provider exchanges it on the first Admin API call. Store
 the federation IDs as project or group CI/CD variables; none of them are
 secret, but keeping them out of `.gitlab-ci.yml` makes the pipeline portable.
-
-See [gitlab-org/ai/claude-federation](https://gitlab.com/gitlab-org/ai/claude-federation)
-for a real pipeline that uses this pattern.
