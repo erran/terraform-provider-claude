@@ -173,6 +173,8 @@ resource archives the rule.
 
 | Resource | Manages | Notes |
 | --- | --- | --- |
+| `claude_service_account_workspace` | A service account's membership in a workspace | Composite id `<service_account_id>/<workspace_id>`; the implicit default-workspace membership is not managed here. |
+| `claude_federation_rule_workspace` | A workspace a federation rule is enabled in | Composite id `<federation_rule_id>/<workspace_id>`; for workspaces beyond the rule's initial `workspace_id`. |
 | `claude_workspace` | Organization workspaces (`wrkspc_...`) | Delete archives the workspace. |
 | `claude_workspace_member` | A user's membership/role in a workspace | Composite id `<workspace_id>/<user_id>`. |
 | `claude_organization_invite` | Pending organization invites | No update endpoint; `email`/`role` force replacement. |
