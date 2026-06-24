@@ -84,8 +84,8 @@ func (r *skillResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Description: "Files to upload as the skill's first version, keyed by path. All paths must share " +
 					"one top-level directory and include a `SKILL.md` at its root (e.g. " +
 					"`my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` " +
-					"function. Write-only: the API does not return file contents, so they are not restored on " +
-					"import. Changing the files forces a new resource.",
+					"function. The API does not return file contents on read, but on import they are recovered " +
+					"by downloading the skill's latest version content. Changing the files forces a new resource.",
 				ElementType: types.StringType,
 				Optional:    true,
 				PlanModifiers: []planmodifier.Map{
@@ -170,9 +170,26 @@ func (r *skillResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	// Files are write-only; the API never returns them, so carry the prior
-	// state value forward unchanged.
-	resp.Diagnostics.Append(resp.State.Set(ctx, modelFromSkill(skill, state.Files))...)
+	// Files are write-only on create and read, so the API never returns them
+	// alongside the skill. Normally carry the prior state value forward
+	// unchanged, but on import (no prior files) recover them by downloading the
+	// skill's latest version content.
+	files := state.Files
+	if files.IsNull() && skill.LatestVersion != "" {
+		downloaded, err := r.client.DownloadSkillVersion(ctx, skill.ID, skill.LatestVersion)
+		if err != nil {
+			resp.Diagnostics.AddError("Unable to download skill files", err.Error())
+			return
+		}
+		m, diags := skillFilesToMap(downloaded)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		files = m
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, modelFromSkill(skill, files))...)
 }
 
 // Update is a no-op: every configurable attribute forces replacement, so the

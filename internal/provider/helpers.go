@@ -8,6 +8,7 @@ import (
 	"sort"
 
 	"github.com/erran/terraform-provider-claude/internal/client"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
@@ -46,6 +47,17 @@ func skillFilesFromPlan(ctx context.Context, files types.Map) ([]client.SkillFil
 		out = append(out, client.SkillFile{Path: path, Content: []byte(contents[path])})
 	}
 	return out, diags
+}
+
+// skillFilesToMap converts the client's file list into a Terraform map of path
+// to file content, used to restore the write-only files attribute when a skill
+// or skill version is imported by downloading its content.
+func skillFilesToMap(files []client.SkillFile) (types.Map, diag.Diagnostics) {
+	elems := make(map[string]attr.Value, len(files))
+	for _, f := range files {
+		elems[f.Path] = types.StringValue(string(f.Content))
+	}
+	return types.MapValue(types.StringType, elems)
 }
 
 // optionalInt64 maps an API integer pointer to a Terraform value, treating a

@@ -18,12 +18,12 @@ resource "claude_skill" "pdf_filler" {
 }
 
 # Each claude_skill_version uploads a new immutable version of the skill.
-resource "claude_skill_version" "pdf_filler_v2" {
+resource "claude_skill_version" "pdf_filler_current" {
   skill_id = claude_skill.pdf_filler.id
 
   files = {
-    "pdf-filler/SKILL.md"   = file("${path.module}/pdf-filler/SKILL.md")
-    "pdf-filler/scripts.py" = file("${path.module}/pdf-filler/scripts.py")
+    "pdf-filler/SKILL.md"           = file("${path.module}/pdf-filler/SKILL.md")
+    "pdf-filler/scripts/example.py" = file("${path.module}/pdf-filler/scripts/example.py")
   }
 }
 ```
@@ -33,7 +33,7 @@ resource "claude_skill_version" "pdf_filler_v2" {
 
 ### Required
 
-- `files` (Map of String) Files to upload as this version, keyed by path. All paths must share one top-level directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` function. Write-only: the API does not return file contents, so they are not restored on import. Changing the files forces a new resource.
+- `files` (Map of String) Files to upload as this version, keyed by path. All paths must share one top-level directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` function. The API does not return file contents on read, but on import they are recovered by downloading the version's content. Changing the files forces a new resource.
 - `skill_id` (String) Identifier of the skill (`skill_...`) this version belongs to. Changing it forces a new resource.
 
 ### Read-Only
@@ -53,8 +53,7 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# Skill versions can be imported as "<skill_id>/<version>". Uploaded files are
-# write-only and are not restored on import, so the next plan will show a diff
-# for the files attribute.
+# Skill versions can be imported as "<skill_id>/<version>". The uploaded files
+# are recovered by downloading the version's content.
 terraform import claude_skill_version.pdf_filler_v2 skill_0123456789abcdef/1759178010641129
 ```

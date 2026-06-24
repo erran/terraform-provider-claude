@@ -4,9 +4,11 @@
 package client
 
 import (
+	"archive/zip"
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 
 	anthropic "github.com/anthropics/anthropic-sdk-go"
@@ -123,6 +125,53 @@ func (c *Client) DeleteSkillVersion(ctx context.Context, skillID, version string
 	b := c.beta()
 	_, err := b.Skills.Versions.Delete(ctx, version, anthropic.BetaSkillVersionDeleteParams{SkillID: skillID})
 	return skillError(err)
+}
+
+// DownloadSkillVersion downloads a skill version's content as a zip archive and
+// returns its files keyed by their archive paths. It lets callers recover the
+// uploaded files of a skill on import, since the create/read endpoints never
+// return file contents.
+func (c *Client) DownloadSkillVersion(ctx context.Context, skillID, version string) ([]SkillFile, error) {
+	b := c.beta()
+	res, err := b.Skills.Versions.Download(ctx, version, anthropic.BetaSkillVersionDownloadParams{SkillID: skillID})
+	if err != nil {
+		return nil, skillError(err)
+	}
+	defer res.Body.Close()
+
+	data, err := io.ReadAll(res.Body)
+	if err != nil {
+		return nil, err
+	}
+	return unzipSkillFiles(data)
+}
+
+// unzipSkillFiles extracts the regular files from a skill content zip archive,
+// preserving their directory-prefixed paths so they round-trip back into an
+// upload (e.g. "my-skill/SKILL.md").
+func unzipSkillFiles(data []byte) ([]SkillFile, error) {
+	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return nil, fmt.Errorf("unable to read skill content archive: %w", err)
+	}
+
+	files := make([]SkillFile, 0, len(zr.File))
+	for _, f := range zr.File {
+		if f.FileInfo().IsDir() {
+			continue
+		}
+		rc, err := f.Open()
+		if err != nil {
+			return nil, fmt.Errorf("unable to open %q in skill content archive: %w", f.Name, err)
+		}
+		content, err := io.ReadAll(rc)
+		rc.Close()
+		if err != nil {
+			return nil, fmt.Errorf("unable to read %q in skill content archive: %w", f.Name, err)
+		}
+		files = append(files, SkillFile{Path: f.Name, Content: content})
+	}
+	return files, nil
 }
 
 // beta returns an anthropic-sdk-go client configured with this client's bearer
