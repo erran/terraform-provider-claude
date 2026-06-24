@@ -85,9 +85,9 @@ func (r *skillVersionResource) Schema(ctx context.Context, req resource.SchemaRe
 			"files": schema.MapAttribute{
 				Description: "Files to upload as this version, keyed by path. All paths must share one top-level " +
 					"directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the " +
-					"file contents, typically read with the `file()` function. Write-only: the API does not " +
-					"return file contents, so they are not restored on import. Changing the files forces a new " +
-					"resource.",
+					"file contents, typically read with the `file()` function. The API does not return file " +
+					"contents on read, but on import they are recovered by downloading the version's content. " +
+					"Changing the files forces a new resource.",
 				ElementType: types.StringType,
 				Required:    true,
 				PlanModifiers: []planmodifier.Map{
@@ -164,9 +164,26 @@ func (r *skillVersionResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	// Files are write-only; the API never returns them, so carry the prior
-	// state value forward unchanged.
-	resp.Diagnostics.Append(resp.State.Set(ctx, modelFromSkillVersion(version, state.Files))...)
+	// Files are write-only on create and read, so the API never returns them
+	// alongside the version. Normally carry the prior state value forward
+	// unchanged, but on import (no prior files) recover them by downloading the
+	// version's content.
+	files := state.Files
+	if files.IsNull() {
+		downloaded, err := r.client.DownloadSkillVersion(ctx, version.SkillID, version.Version)
+		if err != nil {
+			resp.Diagnostics.AddError("Unable to download skill version files", err.Error())
+			return
+		}
+		m, diags := skillFilesToMap(downloaded)
+		resp.Diagnostics.Append(diags...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		files = m
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, modelFromSkillVersion(version, files))...)
 }
 
 // Update is a no-op: every configurable attribute forces replacement, so the

@@ -31,7 +31,7 @@ resource "claude_skill" "pdf_filler" {
 ### Optional
 
 - `display_title` (String) Human-readable label for the skill. Not included in the prompt sent to the model. Changing it forces a new resource.
-- `files` (Map of String) Files to upload as the skill's first version, keyed by path. All paths must share one top-level directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` function. Write-only: the API does not return file contents, so they are not restored on import. Changing the files forces a new resource.
+- `files` (Map of String) Files to upload as the skill's first version, keyed by path. All paths must share one top-level directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` function. The API does not return file contents on read, but on import they are recovered by downloading the skill's latest version content. Changing the files forces a new resource.
 
 ### Read-Only
 
@@ -49,8 +49,7 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# Skills can be imported by their skill_ identifier. Uploaded files are
-# write-only and are not restored on import, so the next plan will show a diff
-# for the files attribute.
+# Skills can be imported by their skill_ identifier. The uploaded files are
+# recovered by downloading the skill's latest version content.
 terraform import claude_skill.pdf_filler skill_0123456789abcdef
 ```
