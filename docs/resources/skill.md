@@ -3,12 +3,12 @@
 page_title: "claude_skill Resource - claude"
 subcategory: ""
 description: |-
-  A custom Agent Skill (skill_...): a reusable bundle of instructions and files that Claude can load on demand. Uploading files here seeds the skill's first version; add further versions with claude_skill_version. The Skills API is in beta. Because there is no update endpoint, changing display_title or files replaces the skill.
+  A custom Agent Skill (skill_...): a reusable bundle of instructions and files that Claude can load on demand. Uploading files here seeds the skill's first version; changing them uploads a new version (you can also add versions with claude_skill_version). The Skills API is in beta. display_title has no update endpoint, so it is immutable once set.
 ---
 
 # claude_skill (Resource)
 
-A custom Agent Skill (`skill_...`): a reusable bundle of instructions and files that Claude can load on demand. Uploading `files` here seeds the skill's first version; add further versions with `claude_skill_version`. The Skills API is in beta. Because there is no update endpoint, changing `display_title` or `files` replaces the skill.
+A custom Agent Skill (`skill_...`): a reusable bundle of instructions and files that Claude can load on demand. Uploading `files` here seeds the skill's first version; changing them uploads a new version (you can also add versions with `claude_skill_version`). The Skills API is in beta. `display_title` has no update endpoint, so it is immutable once set.
 
 ## Example Usage
 
@@ -30,8 +30,8 @@ resource "claude_skill" "pdf_filler" {
 
 ### Optional
 
-- `display_title` (String) Human-readable label for the skill. Not included in the prompt sent to the model. Changing it forces a new resource.
-- `files` (Map of String) Files to upload as the skill's first version, keyed by path. All paths must share one top-level directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` function. Write-only: the API does not return file contents, so they are not restored on import. Changing the files forces a new resource.
+- `display_title` (String) Human-readable label for the skill. Not included in the prompt sent to the model. The Skills API has no update endpoint for it, so it is immutable once set: changing it is rejected at plan time. Recreate the skill to change it.
+- `files` (Map of String) Files to upload as the skill's first version, keyed by path. All paths must share one top-level directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` function. Write-only: the API does not return file contents, so they are not restored on import. Changing the files uploads a new version of the skill.
 
 ### Read-Only
 
@@ -51,6 +51,7 @@ The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/c
 ```shell
 # Skills can be imported by their skill_ identifier. Uploaded files are
 # write-only and are not restored on import, so the next plan will show a diff
-# for the files attribute.
+# for the files attribute; applying it uploads a new version (it does not
+# replace the skill).
 terraform import claude_skill.pdf_filler skill_0123456789abcdef
 ```
