@@ -3,12 +3,12 @@
 page_title: "claude_skill Resource - claude"
 subcategory: ""
 description: |-
-  A custom Agent Skill (skill_...): a reusable bundle of instructions and files that Claude can load on demand. Uploading files here seeds the skill's first version; changing them uploads a new version (you can also add versions with claude_skill_version). The Skills API is in beta. display_title has no update endpoint, so it is immutable once set.
+  A custom Agent Skill (skill_...): a reusable bundle of instructions and files that Claude can load on demand. Uploading files here seeds the skill's first version; changing them uploads a new version (you can also add versions with claude_skill_version). The Skills API is in beta. display_title has no update endpoint, so changing it replaces the skill.
 ---
 
 # claude_skill (Resource)
 
-A custom Agent Skill (`skill_...`): a reusable bundle of instructions and files that Claude can load on demand. Uploading `files` here seeds the skill's first version; changing them uploads a new version (you can also add versions with `claude_skill_version`). The Skills API is in beta. `display_title` has no update endpoint, so it is immutable once set.
+A custom Agent Skill (`skill_...`): a reusable bundle of instructions and files that Claude can load on demand. Uploading `files` here seeds the skill's first version; changing them uploads a new version (you can also add versions with `claude_skill_version`). The Skills API is in beta. `display_title` has no update endpoint, so changing it replaces the skill.
 
 ## Example Usage
 
@@ -30,7 +30,7 @@ resource "claude_skill" "pdf_filler" {
 
 ### Optional
 
-- `display_title` (String) Human-readable label for the skill. Not included in the prompt sent to the model. The Skills API has no update endpoint for it, so it is immutable once set: changing it is rejected at plan time. Recreate the skill to change it.
+- `display_title` (String) Human-readable label for the skill. Not included in the prompt sent to the model. The Skills API has no update endpoint for it, so changing it forces a new resource.
 - `files` (Map of String) Files to upload as the skill's first version, keyed by path. All paths must share one top-level directory and include a `SKILL.md` at its root (e.g. `my-skill/SKILL.md`). Values are the file contents, typically read with the `file()` function. Write-only: the API does not return file contents, so they are not restored on import. Changing the files uploads a new version of the skill.
 
 ### Read-Only

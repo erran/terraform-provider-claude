@@ -62,7 +62,7 @@ func (r *skillResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 		Description: "A custom Agent Skill (`skill_...`): a reusable bundle of instructions and files that " +
 			"Claude can load on demand. Uploading `files` here seeds the skill's first version; changing " +
 			"them uploads a new version (you can also add versions with `claude_skill_version`). The Skills " +
-			"API is in beta. `display_title` has no update endpoint, so it is immutable once set.",
+			"API is in beta. `display_title` has no update endpoint, so changing it replaces the skill.",
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Description: "Identifier of the skill (`skill_...`).",
@@ -73,11 +73,10 @@ func (r *skillResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			},
 			"display_title": schema.StringAttribute{
 				Description: "Human-readable label for the skill. Not included in the prompt sent to the model. " +
-					"The Skills API has no update endpoint for it, so it is immutable once set: changing it " +
-					"is rejected at plan time. Recreate the skill to change it.",
+					"The Skills API has no update endpoint for it, so changing it forces a new resource.",
 				Optional: true,
 				PlanModifiers: []planmodifier.String{
-					requireImmutableString(),
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"files": schema.MapAttribute{
@@ -89,11 +88,20 @@ func (r *skillResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				ElementType: types.StringType,
 				Optional:    true,
 			},
-			"latest_version": computedString("Identifier of the most recent version of the skill, or null if none has been created."),
-			"source":         computedString("Source of the skill: `custom` for user-created skills, `anthropic` for Anthropic-provided ones."),
-			"type":           computedString("Object type, always `skill`."),
-			"created_at":     computedString("ISO 8601 timestamp of when the skill was created."),
-			"updated_at":     computedString("ISO 8601 timestamp of when the skill was last updated."),
+			// latest_version and updated_at change whenever a new version is
+			// uploaded, so they must be planned as "known after apply" on an
+			// update rather than pinned to prior state with UseStateForUnknown.
+			"latest_version": schema.StringAttribute{
+				Description: "Identifier of the most recent version of the skill, or null if none has been created.",
+				Computed:    true,
+			},
+			"updated_at": schema.StringAttribute{
+				Description: "ISO 8601 timestamp of when the skill was last updated.",
+				Computed:    true,
+			},
+			"source":     computedString("Source of the skill: `custom` for user-created skills, `anthropic` for Anthropic-provided ones."),
+			"type":       computedString("Object type, always `skill`."),
+			"created_at": computedString("ISO 8601 timestamp of when the skill was created."),
 		},
 	}
 }
@@ -173,9 +181,8 @@ func (r *skillResource) Read(ctx context.Context, req resource.ReadRequest, resp
 }
 
 // Update uploads changed files as a new version of the skill rather than
-// replacing it. display_title is immutable (enforced at plan time by
-// requireImmutableString), so the only configurable change reaching here is to
-// files.
+// replacing it. display_title forces replacement, so the only configurable
+// change reaching here is to files.
 func (r *skillResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan, state skillResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
