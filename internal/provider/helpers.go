@@ -3,7 +3,14 @@
 
 package provider
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"context"
+	"sort"
+
+	"github.com/erran/terraform-provider-claude/internal/client"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 // optionalString maps an API string to a Terraform value, treating the empty
 // string as null so unset optional fields do not show spurious diffs.
@@ -12,6 +19,33 @@ func optionalString(s string) types.String {
 		return types.StringNull()
 	}
 	return types.StringValue(s)
+}
+
+// skillFilesFromPlan converts a Terraform map of filename to file content into
+// the client's file list, ordered by path for a deterministic upload. A null or
+// empty map returns a nil slice (no files to upload).
+func skillFilesFromPlan(ctx context.Context, files types.Map) ([]client.SkillFile, diag.Diagnostics) {
+	if files.IsNull() || files.IsUnknown() {
+		return nil, nil
+	}
+
+	var contents map[string]string
+	diags := files.ElementsAs(ctx, &contents, false)
+	if diags.HasError() {
+		return nil, diags
+	}
+
+	paths := make([]string, 0, len(contents))
+	for path := range contents {
+		paths = append(paths, path)
+	}
+	sort.Strings(paths)
+
+	out := make([]client.SkillFile, 0, len(paths))
+	for _, path := range paths {
+		out = append(out, client.SkillFile{Path: path, Content: []byte(contents[path])})
+	}
+	return out, diags
 }
 
 // optionalInt64 maps an API integer pointer to a Terraform value, treating a

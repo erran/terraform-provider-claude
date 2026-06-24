@@ -260,6 +260,8 @@ func (p *ClaudeProvider) Resources(ctx context.Context) []func() resource.Resour
 		NewOrganizationInviteResource,
 		NewOrganizationMemberResource,
 		NewAPIKeyResource,
+		NewSkillResource,
+		NewSkillVersionResource,
 	}
 }
 

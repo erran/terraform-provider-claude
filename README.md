@@ -180,6 +180,8 @@ resource archives the rule.
 | `claude_organization_invite` | Pending organization invites | No update endpoint; `email`/`role` force replacement. |
 | `claude_organization_member` | The role of an existing org member | Members are created via invites, not the API; the resource adopts an existing user. |
 | `claude_api_key` | Name and status of an existing API key | Keys can't be created or deleted via the API; `create` adopts an existing key and `delete` is a no-op. |
+| `claude_skill` | A custom [Agent Skill](https://platform.claude.com/docs/en/api/python/beta/skills/create) (`skill_...`) | Beta API; `files` seed the first version and are write-only. No update endpoint, so `display_title`/`files` force replacement. |
+| `claude_skill_version` | An immutable version of a skill (`skillver_...`) | Beta API; composite import `<skill_id>/<version>`. `files` are write-only; `skill_id`/`files` force replacement. |
 
 ## Data sources
 
